@@ -70,6 +70,7 @@ from reportlab.lib.enums import TA_CENTER
 
 #from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from reportlab.lib.colors import black, white
 
 def draw_icon_placeholder(c, x, y, size=12):
     """Draws a circular icon placeholder at the specified coordinates."""
@@ -80,11 +81,25 @@ def create_cv():
     c = canvas.Canvas("cv_template.pdf", pagesize=A4)
     width, height = A4
 
+    c.setFillColor(black)
+
+    # Draw the rectangle for the background
+    header_height = 80  # The height of the header background
+    header_y_position = height - header_height - 60  # Adjust the vertical position of the header
+    c.rect(0, header_y_position, width, header_height, stroke=0, fill=1)
+
+    # Set the fill color back to white for the text
+    c.setFillColor(white)  # RGB color for white
+
     # Header with name and job title
     c.setFont("Helvetica-Bold", 24)
-    c.drawCentredString(width / 2, height - 100, "NAME AND SURNAME")
+    # The text is moved down by half the header height to center it
+    c.drawCentredString(width / 2, header_y_position + (header_height / 2) - 12, "NAME AND SURNAME")
     c.setFont("Helvetica", 12)
-    c.drawCentredString(width / 2, height - 130, "JOB TITLE")
+    c.drawCentredString(width / 2, header_y_position + (header_height / 4) - 6, "JOB TITLE")
+
+    # Reset the fill color to black for the rest of the text
+    c.setFillColor(black)  # Black
 
     # Contact Information Section
     contact_info_y_position = height - 180  # Starting Y position of the contact info
