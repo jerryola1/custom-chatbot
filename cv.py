@@ -10,6 +10,9 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import black, white
+from reportlab.platypus import KeepInFrame
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, KeepInFrame
 
 # Function to draw an icon from an image file
 def draw_icon(c, image_path, x, y, width, height):
@@ -76,29 +79,6 @@ def create_cv():
     details_offset = 15  # Space between the label and details
     column_width = width / 3  # Divide the width of the page into 3 columns
 
-    # # Define a function to draw a contact information column
-    # def draw_contact_column(column_x_center, label, details):
-    #     # Calculate the center for the icons and text
-    #     icon_center_y = contact_info_y_position + icon_size // 2
-    #     label_y_position = contact_info_y_position - (icon_size + text_offset_from_icon)
-    #     details_y_position = label_y_position - details_offset
-        
-    #     # Draw icon placeholder
-    #     draw_icon_placeholder(c, column_x_center, icon_center_y, icon_size)
-        
-    #     # Draw label
-    #     c.setFont("Helvetica-Bold", contact_font_size)
-    #     c.drawCentredString(column_x_center, label_y_position, label)
-        
-    #     # Draw details
-    #     c.setFont("Helvetica", contact_font_size)
-    #     c.drawCentredString(column_x_center, details_y_position, details)
-
-    # # Draw the columns for Personal Address, Email, and Mobile
-    # draw_contact_column(column_width / 2, "Personal Address", "1234 Street Address, City, Country")
-    # draw_contact_column(width / 2, "Email", "example@email.com")
-    # draw_contact_column(width - (column_width / 2), "Mobile", "+123456789")
-
     # Define a function to draw a contact information column with real icons
     def draw_contact_column_with_icon(column_x_center, icon_path, label, details):
         # Calculate the positions for the icon, label, and details
@@ -123,25 +103,36 @@ def create_cv():
     draw_contact_column_with_icon(width / 2, "email_icon.png", "Email", "example@email.com")
     draw_contact_column_with_icon(width - (column_width / 2), "phone_icon.png", "Mobile", "+123456789")
 
-    # Draw the horizontal line below the contact information
-    # contact_line_y = contact_info_y_position - 40
-    # c.line(50, contact_line_y, width - 50, contact_line_y)
-
     # Profile Section Heading with Black Background
-    profile_heading_start_y = contact_info_y_position - 100  # Adjust the vertical position as needed
+    profile_heading_start_y = contact_info_y_position - 80  # Adjust the vertical position as needed
     profile_heading_font_size = 14
     profile_heading_height = 20  # Height of the black background for the heading
     profile_text_font_size = 10
 
     # Draw the black rectangle for the profile section heading background
     c.setFillColor(black)
-    c.rect(0, profile_heading_start_y, width, profile_heading_height, stroke=0, fill=1)
+    #c.rect(0, profile_heading_start_y, width, profile_heading_height, stroke=0, fill=1)
 
     # Set font color to white for the heading and draw the heading
-    c.setFillColor(white)
+    #c.setFillColor(white)
     c.setFont("Helvetica-Bold", profile_heading_font_size)
-    heading_text = "PROFILE"
-    c.drawCentredString(width / 2, profile_heading_start_y + (profile_heading_height - profile_heading_font_size) / 2, heading_text)
+    # heading_text = "PROFILE"
+    # c.drawCentredString(width / 2, profile_heading_start_y + (profile_heading_height - profile_heading_font_size) / 2, heading_text)
+
+    # Calculate the width of the "PROFILE" text
+    profile_heading_text = "PROFILE"
+    profile_heading_width = c.stringWidth(profile_heading_text, "Helvetica-Bold", profile_heading_font_size)
+
+    # Calculate the position to center the heading on the page
+    profile_heading_x = (width - profile_heading_width) / 2 - 5 
+
+    # Draw the black background rectangle for the "PROFILE" heading
+    c.rect(profile_heading_x, profile_heading_start_y, profile_heading_width + 10, profile_heading_height, stroke=0, fill=1)
+
+    # Draw the "PROFILE" text in white
+    c.setFillColor(white)
+    c.drawCentredString(width / 2, profile_heading_start_y + (profile_heading_height - profile_heading_font_size) / 2, profile_heading_text)
+
 
     # Draw the full-width black HR below the profile heading
     c.setLineWidth(1)
@@ -152,15 +143,83 @@ def create_cv():
     c.setFillColor(black)
 
     # Set font for the profile description text
-    profile_text = "A brief overview of your professional background, skills, and achievements." # Replace with actual profile text
-    text_object = c.beginText(50, profile_heading_start_y - 40)  # Position the text below the heading
-    text_object.setFont("Helvetica", profile_text_font_size)
-    text_object.setLeading(14)  # Set the space between lines of text
+    styles = getSampleStyleSheet()
+    styleN = styles['Normal']
+    styleN.fontName = 'Helvetica'
+    styleN.fontSize = profile_text_font_size
+    styleN.leading = 14
+    styleN.textColor = black
 
-    # Add the profile text
-    text_object.textLines(profile_text)
-    c.drawText(text_object)
+    # Replace with actual profile text
+    profile_text = "A very long overview of your professional background, skills, and achievements. " * 10  # Example long text
 
+    # Create a Paragraph object
+    profile_para = Paragraph(profile_text, style=styleN)
+
+    # The width of the KeepInFrame should be the width of the page minus margins
+    frame_width = width - 100  # Adjust the margins as needed
+    frame_height = 100  # Starting height, KeepInFrame will adjust this as needed
+
+    # Create a KeepInFrame object - it will automatically adjust the height to fit the content
+    kif = KeepInFrame(frame_width, frame_height, [profile_para], hAlign='LEFT', vAlign='TOP')
+
+    # Draw the profile text
+    frame_x = 50  # Margin on the left
+    frame_y = profile_heading_start_y - 100  # Position the frame below the heading with some space
+    frame = Frame(frame_x, frame_y, frame_width, frame_height, showBoundary=0)  # showBoundary=1 for debugging
+    frame.addFromList([kif], c)
+
+    # Starting Y position for the Professional Experience section
+    experience_start_y = frame_y - frame_height - 40  # Adjust this based on where the previous section ends
+
+    # # Professional Experience Heading
+    # c.setFont("Helvetica-Bold", 14)
+    # c.drawString(50, experience_start_y, "Professional Experience")
+
+    # # Sample experiences
+    # experiences = [
+    #     "Experience 1: Details about experience 1...",
+    #     "Experience 2: Details about experience 2...",
+    #     # ... more experiences ...
+    # ]
+
+    # # Set font for the experience details
+    # c.setFont("Helvetica", 10)
+    # text_y = experience_start_y - 20  # Starting position for the first experience
+
+    # Function to add experiences
+    def add_experience(text, y_position):
+        global text_y  # To modify the external text_y variable
+        wrap_width = 450  # Width in which the text should be wrapped
+        leading = 14  # Line spacing
+
+        words = text.split()
+        line = ''
+        text_object = c.beginText(50, y_position)
+        text_object.setFont("Helvetica", 10)
+        text_object.setLeading(leading)
+
+        for word in words:
+            # Check if adding the word exceeds the wrap width
+            if c.stringWidth(line + ' ' + word, "Helvetica", 10) <= wrap_width:
+                line += ' ' + word if line else word
+            else:
+                # Draw the line and start a new one
+                text_object.textLine(line)
+                line = word
+
+        # Add the last line
+        text_object.textLine(line)
+        c.drawText(text_object)
+
+        # Calculate new Y position
+        text_height = len(text_object._lines) * leading
+        text_y = y_position - text_height - 10  # Update y-coordinate for the next experience
+
+        # Check for page overflow
+        if text_y < 50:  # If near the bottom of the page
+            c.showPage()  # Start a new page
+            text_y = 800  # Reset y-coordinate for the new page
 
 
 
