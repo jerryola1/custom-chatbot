@@ -4,73 +4,17 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph, Frame
 from reportlab.lib.enums import TA_CENTER
 
-# # Set up the PDF file
-# c = canvas.Canvas("cv_template.pdf", pagesize=A4)
-# width, height = A4  # A4 size
-
-# # Set up the styles
-# styles = getSampleStyleSheet()
-# styleN = styles['Normal']
-# styleH = styles['Heading1']
-
-# # Define custom styles for the CV
-# custom_style = ParagraphStyle(
-#     'custom',
-#     parent=styles['Normal'],
-#     fontName='Helvetica',
-#     fontSize=10,
-#     leading=12,
-#     alignment=TA_CENTER,
-# )
-
-# # Define the coordinates for the header, which will need to be adjusted
-# x_center = width / 2
-# y_position = height - 100  # Adjust this value as needed
-
-# # Add the header (Name and Surname, Job title)
-# c.setFont("Helvetica-Bold", 24)  # Adjust the font size as needed
-# c.drawCentredString(x_center, y_position, "NAME AND SURNAME")
-# c.setFont("Helvetica", 14)
-# c.drawCentredString(x_center, y_position - 30, "JOB TITLE")  # Adjust for correct spacing
-
-# # Placeholder for the contact information graphics - to be added later
-
-# # Save the PDF to see the header
-# #c.save()
-
-# #print("Initial CV structure with header has been created: cv_template.pdf")
-
-# # Placeholder function for contact graphics
-# def add_contact_info_placeholder(canvas_obj, x, y):
-#     canvas_obj.setStrokeColorRGB(0, 0, 0)  # Set color to black
-#     canvas_obj.setLineWidth(1)
-#     # Draw rectangles as placeholders for icons
-#     canvas_obj.rect(x, y, 16, 16)  # Adjust size as needed
-#     # Placeholder for text next to the icon
-#     canvas_obj.drawString(x + 20, y, "Contact Information Placeholder")
-
-# # Header is already added from previous code
-
-# # Coordinates for the contact information placeholders
-# x_left_margin = 50  # Adjust this value as needed
-# y_contact_info = y_position - 70  # Adjust this value as needed
-
-# # Add placeholders for contact information graphics
-# add_contact_info_placeholder(c, x_left_margin, y_contact_info)  # For Personal Address
-# add_contact_info_placeholder(c, x_left_margin, y_contact_info - 20)  # For Email
-# add_contact_info_placeholder(c, x_left_margin, y_contact_info - 40)  # For Mobile
-
-# # Continue adding the other sections...
-
-# # Save the PDF and check the layout
-# c.save()
-
-# print("Added contact information placeholders to the CV template: /mnt/data/cv_template.pdf")
-
 
 #from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import black, white
+
+# Function to draw an icon from an image file
+def draw_icon(c, image_path, x, y, width, height):
+    """Draws an image icon at the specified coordinates with the given size."""
+    c.drawImage(image_path, x, y, width, height, preserveAspectRatio=True)
 
 def draw_icon_placeholder(c, x, y, size=12):
     """Draws a circular icon placeholder at the specified coordinates."""
@@ -81,12 +25,32 @@ def create_cv():
     c = canvas.Canvas("cv_template.pdf", pagesize=A4)
     width, height = A4
 
+    # Register a font (if not using standard fonts)
+    #pdfmetrics.registerFont(TTFont('Helvetica-Bold', 'Helvetica-Bold.ttf'))
+
+    # Set font to measure text width
+    font_size = 24
+    c.setFont("Helvetica-Bold", font_size)
+    name = "NAME AND SURNAME"
+    job_title = "JOB TITLE"
+    name_width = c.stringWidth(name, "Helvetica-Bold", font_size)
+    job_title_width = c.stringWidth(job_title, "Helvetica-Bold", font_size)
+
+    # Use the wider of the two text widths
+    max_text_width = max(name_width, job_title_width)
+
+    # Calculate rectangle width (text width + padding)
+    rect_padding = 20  # Adjust padding as needed
+    rect_width = max_text_width + rect_padding * 2
+
     c.setFillColor(black)
 
     # Draw the rectangle for the background
     header_height = 80  # The height of the header background
     header_y_position = height - header_height - 60  # Adjust the vertical position of the header
-    c.rect(0, header_y_position, width, header_height, stroke=0, fill=1)
+    # Calculate x-coordinate for rectangle so it's centered
+    rect_x_position = (width - rect_width) / 2
+    c.rect(rect_x_position, header_y_position, rect_width, header_height, stroke=0, fill=1)
 
     # Set the fill color back to white for the text
     c.setFillColor(white)  # RGB color for white
@@ -94,9 +58,10 @@ def create_cv():
     # Header with name and job title
     c.setFont("Helvetica-Bold", 24)
     # The text is moved down by half the header height to center it
-    c.drawCentredString(width / 2, header_y_position + (header_height / 2) - 12, "NAME AND SURNAME")
+    padding_top = 20  # Adjust this value for top padding
+    c.drawCentredString(width / 2, header_y_position + header_height - padding_top - 12, "NAME AND SURNAME")
     c.setFont("Helvetica", 12)
-    c.drawCentredString(width / 2, header_y_position + (header_height / 4) - 6, "JOB TITLE")
+    c.drawCentredString(width / 2, header_y_position + header_height - padding_top - 36, "JOB TITLE")
 
     # Reset the fill color to black for the rest of the text
     c.setFillColor(black)  # Black
