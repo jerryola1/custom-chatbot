@@ -1,4 +1,6 @@
 /envJerry
+/.ipynb_checkpoints
+/cv
 university_data.csv
 cv_template.pdf
 cv_uk_format.docx
@@ -6,3 +8,8 @@ university_data1.csv
 university_data2.csv
 university_data3.csv
 university_data_updated.csv
+data.txt
+metadata.json
+open_ai_api_key.txt
+university_data_updated.csv
+university_data.csv
